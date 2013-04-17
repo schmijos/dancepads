@@ -7,7 +7,7 @@
 
 #define SOCKET_PATH "/tmp/dancepad_socket"
 
-void uds_listen(params_t* p) {
+void uds_listen(dp_exchange_t* p) {
 	struct sockaddr_un strAddr;
 	socklen_t lenAddr;
 	int fdSock;
@@ -30,6 +30,7 @@ void uds_listen(params_t* p) {
 	printf("uds server initialized with socket %d\n", fdSock);
 	while ((fdConn = accept(fdSock, (struct sockaddr*) &strAddr, &lenAddr)) >= 0) {
 		// Read Pad Number
+		// p->padnr
 		char padNr[1024];
 		if (read(fdConn, padNr, 8) < 0) {
 			errorExit("read");
@@ -38,6 +39,7 @@ void uds_listen(params_t* p) {
 		printf("Read: %s\n", padNr);
 
 		// Write dp_status_t of Pad identified before
+		// p->status
 		char* padStatus = "42";
 		if (write(fdConn, padStatus, 3) < 0) {
 			errorExit("write");
@@ -46,6 +48,7 @@ void uds_listen(params_t* p) {
 		printf("Wrote: %s\n", padStatus);
 		
 		// Read Command (dp_command_t)
+		// p->command
 		char padCmd[2];
 		if (read(fdConn, padCmd, 2) < 0) {
 			errorExit("read");
