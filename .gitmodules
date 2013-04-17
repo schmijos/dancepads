@@ -1,0 +1,6 @@
+[submodule "wiringPi"]
+	path = wiringPi
+	url = git://git.drogon.net/wiringPi
+[submodule "client"]
+	path = client
+	url = https://github.com/rnestler/dancepadpic.git
