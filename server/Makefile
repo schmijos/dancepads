@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I. -lpthread -lwiringPi -Wall
+CFLAGS=-I. -lpthread -lwiringPi -Wall -std=gnu99
 DEPS = utils.h uds.h
 OBJ = server.o utils.o uds.o
 OBJ2 = wiringpi_test.o
