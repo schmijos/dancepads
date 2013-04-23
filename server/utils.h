@@ -3,23 +3,25 @@
 
 #define PAD_COUNT 10
 
+// pack content for SPI transfer
 union dp_command {
-	unsigned int is_cmd:1;
+	unsigned int is_cmd : 1 __attribute__ ((packed));
 	struct {
-		unsigned int   :1;
-		unsigned int r :5;
-		unsigned int g :5;
-		unsigned int b :5;
+		unsigned int   : 1 __attribute__ ((packed));
+		unsigned int r : 5 __attribute__ ((packed));
+		unsigned int g : 5 __attribute__ ((packed));
+		unsigned int b : 5 __attribute__ ((packed));
 	} rgb;
 	unsigned char bytes[2];
 };
 typedef union dp_command dp_command_t;
 
+// pack content for SPI transfer
 union dp_status {
-	unsigned int is_pressed:1;
+	unsigned int is_pressed : 1 __attribute__ ((packed));
 	struct {
-		unsigned int       :1;
-		unsigned int value :7;
+		unsigned int       : 1 __attribute__ ((packed));
+		unsigned int value : 7 __attribute__ ((packed));
 	} data;
 	unsigned char byte;
 };
