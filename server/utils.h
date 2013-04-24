@@ -2,6 +2,7 @@
 #define UTILS_H_
 
 #define PAD_COUNT 10
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 // pack content for SPI transfer
 union dp_command {

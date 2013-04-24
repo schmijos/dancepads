@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
+#include <errno.h>
+#include <string.h>
+#include <wiringPiSPI.h>
 #include "utils.h"
 #include "uds.h"
 
@@ -83,6 +86,18 @@ void* run_tty(void* arg){
 
 void* run_spi(void* arg){ 
 	dp_exchange_t* p = (dp_exchange_t*)(arg);
+
+	// Initialize SPI Device
+    int channel = 1;
+    int speed = 500000;
+    int fd = wiringPiSPISetup(channel, speed);
+    if (fd == -1) {
+        printf( "SPI Setup Error: %s\n", strerror(errno));
+		return NULL;
+    }
+    printf("SPI Device FD:\t%d\n", fd);
+	
+	// Data Exchange Loop
 	int i = 0;
 	while(1) {
 		// Commit Status
@@ -95,6 +110,17 @@ void* run_spi(void* arg){
     		printf("SPI got command %d for %d\n", p->command.is_cmd, p->padnr);
 			p->command.is_cmd = 0;
 		  }
+
+		  // SPI Read and Write
+    	  unsigned char* data = p->command.bytes;
+          int ret = wiringPiSPIDataRW(channel, data, ARRAY_SIZE(data));
+          if (ret == -1) {
+            printf( "SPI RW Error: %s\n", strerror(errno));
+          } else {
+            printf("Bytes Written:\t%d\n", ret);
+            printf("Resonse Data:\t%d, %d\n", data[0], data[1]);
+			// TODO Status entgegennehmen
+          }
     	pthread_mutex_unlock(&p->mutex);
 		
 		usleep(1000000);
