@@ -6,7 +6,7 @@
 
 // pack content for SPI transfer
 union dp_command {
-	unsigned int is_cmd : 1 __attribute__ ((packed));
+	unsigned int is_rgb : 1 __attribute__ ((packed));
 	struct {
 		unsigned int   : 1 __attribute__ ((packed));
 		unsigned int r : 5 __attribute__ ((packed));
@@ -14,6 +14,7 @@ union dp_command {
 		unsigned int b : 5 __attribute__ ((packed));
 	} rgb;
 	unsigned char bytes[2];
+	unsigned int is_not_empty : 16 __attribute__ ((packed));
 };
 typedef union dp_command dp_command_t;
 

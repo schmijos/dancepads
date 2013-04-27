@@ -31,6 +31,7 @@ int main() {
 
 	// TODO Monitor and Set the right Thread Priority
 	pthread_create(&spi_thread, NULL, run_spi, &params);
+	usleep(100000);
 	pthread_create(&tty_thread, NULL, run_tty, &params);
 	//pthread_create(&uds_thread, NULL, run_uds, &params);
 	//pthread_join(uds_thread, NULL);
@@ -49,36 +50,39 @@ void sigfunc(int sig_no)
 void* run_uds(void* arg){ 
 	dp_exchange_t* p = (dp_exchange_t*)(arg);
 	uds_listen(p);
-	printf("uds server ended abnormally!");
+	printf("uds server ended abnormally!\n");
 	return NULL;
 }
 
 void* run_tty(void* arg){ 
 	dp_exchange_t* p = (dp_exchange_t*)(arg);
+	
 	while(1) {
-		// Read Command from stdin
-		int padnr, cmd, r, g, b;
+		int padnr, rgb, r, g, b;
+
+		printf("Commit Command [padnr rgbflag red green blue]: ");
 		scanf("%d", &padnr);
-		scanf("%d", &cmd);
+		scanf("%d", &rgb);
 		scanf("%d", &r);
 		scanf("%d", &g);
 		scanf("%d", &b);
 
-		// TODO Verify Input
-		
-		// SPI Status Output
-		printf("SPI Status: %d %d\n", p->padnr, p->status.is_pressed);
-
-		// Commit Command
+		// Commit command to choosen pad
 		pthread_mutex_lock(&p->mutex);
-		  // Write Command to exchange object
 		  p->padnr = padnr;
 		  p->command.rgb.r = r;
 		  p->command.rgb.g = g;
 		  p->command.rgb.b = b;
-		  p->command.is_cmd = cmd;
+		  p->command.is_rgb = rgb;
     	pthread_mutex_unlock(&p->mutex);
-		
+
+		// Await result
+		printf("Awaiting result from pad %d\n", p->padnr);
+		while(p == 0) {
+			usleep(10000);
+		}
+		printf("SPI Status: %d %d\n", p->padnr, p->status.is_pressed);
+
 		usleep(10000);
 	}
 	return NULL;
@@ -98,29 +102,26 @@ void* run_spi(void* arg){
     printf("SPI Device FD:\t%d\n", fd);
 	
 	// Data Exchange Loop
-	int i = 0;
 	while(1) {
 		// Commit Status
 		pthread_mutex_lock(&p->mutex);
-		  // Dummy Status
-		  p->status.is_pressed = ++i % 2;
+		
+		// Consume Command
+		if (p->command.is_not_empty) {
+			// SPI Read and Write
+    	  	unsigned char* data = p->command.bytes;
+          	int ret = wiringPiSPIDataRW(channel, data, ARRAY_SIZE(data));
+          	if (ret == -1) {
+        		printf( "SPI RW Error: %s\n", strerror(errno));
+          	} else {
+            	printf("Bytes Written:\t%d\n", ret);
+            	printf("Resonse Data:\t%d, %d\n", data[0], data[1]);
+				// TODO Status entgegennehmen
+        	}
+    		printf("SPI got rgb %d for %d\n", p->command.is_rgb, p->padnr);
+			p->command.is_not_empty = 0;
+		}
 
-		  // Receive Command
-		  if (p->command.is_cmd != 0) {
-    		printf("SPI got command %d for %d\n", p->command.is_cmd, p->padnr);
-			p->command.is_cmd = 0;
-		  }
-
-		  // SPI Read and Write
-    	  unsigned char* data = p->command.bytes;
-          int ret = wiringPiSPIDataRW(channel, data, ARRAY_SIZE(data));
-          if (ret == -1) {
-            printf( "SPI RW Error: %s\n", strerror(errno));
-          } else {
-            printf("Bytes Written:\t%d\n", ret);
-            printf("Resonse Data:\t%d, %d\n", data[0], data[1]);
-			// TODO Status entgegennehmen
-          }
     	pthread_mutex_unlock(&p->mutex);
 		
 		usleep(1000000);
