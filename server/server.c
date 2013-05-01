@@ -108,17 +108,34 @@ void* run_spi(void* arg){
 		
 		// Consume Command
 		if (p->command.is_not_empty) {
+			// Debug Output: Say, what we got here
+    		printf("\n\nSPI: Write to Pad %d\n", p->padnr);
+			if (p->command.is_rgb) {
+    			printf("  Type:\tRGB data\n");
+				printf("  Data:\trgb(%d,%d,%d)\n", 
+					p->command.rgb.r * 8,
+					p->command.rgb.g * 8,
+					p->command.rgb.b * 8);
+			} else {
+    			printf("  Type:\tCommand\n");
+				printf("  Data:\tTODO");
+			}
+			printf("  Size:\t%d Bytes\n\n", sizeof(p->command.bytes));
+
 			// SPI Read and Write
     	  	unsigned char* data = p->command.bytes;
           	int ret = wiringPiSPIDataRW(channel, data, ARRAY_SIZE(data));
           	if (ret == -1) {
-        		printf( "SPI RW Error: %s\n", strerror(errno));
+        		printf( "Error at SpiRW: %s\n", strerror(errno));
           	} else {
             	printf("Bytes Written:\t%d\n", ret);
             	printf("Resonse Data:\t%d, %d\n", data[0], data[1]);
 				// TODO Status entgegennehmen
         	}
-    		printf("SPI got rgb %d for %d\n", p->command.is_rgb, p->padnr);
+
+			// TODO Status Output
+
+			// Actually consume command by setting everything back to zero
 			p->command.is_not_empty = 0;
 		}
 
