@@ -19,24 +19,47 @@
 
 void main(void)
 {
-    adc_initialize();
-    //led_initialize();
-    spi_initialize();
-
     uint8_t max = MAX;
     uint8_t r=0, g=0, b=0;
     uint8_t s=0, result=0;
-    unsigned short adc;
+    
+    // Debug LED
+    TRISCbits.TRISC2 = 0;
+    PORTCbits.RC2 = 0;
+    
+    OpenADC( ADC_FOSC_32 &
+        ADC_RIGHT_JUST   &
+        ADC_12_TAD,
+        ADC_CH0          &
+        ADC_REF_VDD_VSS  &
+        ADC_INT_OFF, ADC_CH0 );
+    
+    //adc_initialize();
+    //led_initialize();
+    spi_initialize();
+
+    Delay10TCYx( 5 );     // Delay for 50TCY
+    ConvertADC();         // Start conversion
+    while( BusyADC() );   // Wait for completion
+    s = ReadADC();        // Read result
+    CloseADC();           // Disable A/D converter
     
     result = ReadSPI1();
-    WriteSPI1(result);
+    WriteSPI1(s & result);
     
+
+    PORTCbits.RC2 = 1;
+
+
     // Write your code here
     while (1) {
+
+        /*
         adc = adc_busy_read();
+        PORTCbits.RC2 = 1;
         s = adc;
         WriteSPI1(s);
-        
+        */
         //led_set_rgb(result,result,result);
         /*
         if (result < 63)

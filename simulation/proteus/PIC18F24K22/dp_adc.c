@@ -1,8 +1,8 @@
 #include "dp_adc.h"
 
 #include <p18cxxx.h>
-#include "adc.h"
-#include "delays.h"
+#include <adc.h>
+#include <delays.h>
 
 void adc_initialize()
 {
@@ -31,8 +31,8 @@ void adc_initialize()
     //Konfiguration des ADC
     OpenADC ( 
         ADC_FOSC_16 & ADC_RIGHT_JUST & ADC_20_TAD,
-        ADC_CH0 & ADC_INT_OFF,
-        4
+        ADC_CH0 & ADC_INT_OFF & ADC_REF_VDD_VSS,
+        0b0000000000000001 // wieso geht ADC_1ANA nicht?
     );
 }
 
