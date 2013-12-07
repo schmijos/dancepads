@@ -19,7 +19,7 @@ void spi_initialize()
         TRISCbits.TRISC4 = 1; // define SDI pin as input
         TRISCbits.TRISC5 = 0; // define SDO pin as output
 
-        OpenSPI1(SLV_SSON, MODE_11, SMPMID);
+        OpenSPI1(SLV_SSON, MODE_00, SMPMID);
 }
 
 uint8_t spi_readWord()
