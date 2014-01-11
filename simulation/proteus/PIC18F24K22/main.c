@@ -20,113 +20,57 @@
 void set_wren(void);
 
 
+
+
 void main(void)
 {
     uint8_t max = MAX;
     uint8_t r=0, g=0, b=0;
     uint8_t s=0, result=0;
     
-    int16_t adc;
-    int8_t res;
+    int8_t adc=1;
+    uint8_t cmd_from_master;
     
     // Debug LED
     TRISCbits.TRISC2 = 0;
     PORTCbits.RC2 = 0;
-    /*
-    OpenADC( ADC_FOSC_32 &
-        ADC_RIGHT_JUST   &
-        ADC_12_TAD,
-        ADC_CH0          &
-        ADC_REF_VDD_VSS  &
-        ADC_INT_OFF, ADC_CH0 );
-    */
-    
-    //led_initialize();
-    //spi_initialize();
-    
+
+    // Initialize ADC
+    OpenADC ( 
+        ADC_FOSC_16 & ADC_RIGHT_JUST & ADC_4_TAD, // ADC_4_TAD = Converting over 4*(1/(FOSC/16)) = 4*(1/250kHz) = 16us
+        ADC_CH0 & ADC_INT_OFF & ADC_REF_VDD_VSS, // FOSC = 4 MHz
+        0b0000000000000001 // wieso geht ADC_1ANA nicht?
+    );
+
+    // Open SPI
     OpenSPI1(SLV_SSON, MODE_00, SMPMID);
-    
-    //read SDI1:
-    result = ReadSPI1();
 
+    // Initialize
+    // .adc with initial Convertion
+    // .cmd_from_master
+    ConvertADC();
+    //PORTCbits.RC2 = 1;
+    cmd_from_master = ReadSPI1();
     
-    if (result==183){
-       PORTCbits.RC2 = 1;
-    }  /*->true*/
-    
-    PORTCbits.RC2 = 0;
-    PORTCbits.RC2 = 0;
-
-    
-    /*set_wren(void)+*/
-    
-    res = WriteSPI1(0x55);
-   
-    
-    if (res==0){
-       PORTCbits.RC2 = 0;
-    } /*->true*/
-    
-    /*
-    if (res==-1){
-       PORTCbits.RC2 = 1;
-    }
-    while(0 != (WriteSPI1(0x55)));
-    
-    WriteSPI1('a');
-    while(0 != (WriteSPI1(0x0a)));
-    */
-    
-
-    /*
-    r = WriteSPI1('a');
-    
-    if (r==-1){
-       PORTCbits.RC2 = 1;
-    }
-
-    /*
-    Delay10TCYx( 5 );     // Delay for 50TCY
-    ConvertADC();         // Start conversion
-    while( BusyADC() );   // Wait for completion
-    s = ReadADC();        // Read result
-    CloseADC();           // Disable A/D converter
-    */
-
-    
-
-
-    adc_initialize();
 
     // Write your code here
     while (1) {
 
+        if (!BusyADC()) {
+            // ReadADC returns 10bit in 16bit uint16
+            // Right-Shift 2Bit and read lowest 8bit
+            adc = ReadADC() >> 2;
+            ConvertADC();
+        }
         
-        adc = adc_busy_read();
-        PORTCbits.RC2 = 1;
-        /*
-        PORTCbits.RC2 = 1;
-        s = adc;
-        WriteSPI1(s);
-        */
-        //led_set_rgb(result,result,result);
-        /*
-        if (result < 63)
-            led_set_rgb(512,0,0);
-        if (result > 63)
-            led_set_rgb(0,0,1);
-        if (result == 63)
-            led_set_rgb(0,1,0);
-        */
-        //__delay_ms(10);
+        while(0 != WriteSPI1(183) );
+        //WriteSPI1(adc) ;
+        DataRdySPI1();
+        //Read Command or Color from Master:
+        cmd_from_master = ReadSPI1();
+        //DataRdySPI1();
+        
+
     }
  }
  
- /*
- void set_wren(void)
-{
-    SPI_CS = 0;
-    var = putcSPI(SPI_WREN);
-    SPI_CS = 1;
-}
- */

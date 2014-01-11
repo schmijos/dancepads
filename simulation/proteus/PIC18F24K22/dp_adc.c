@@ -30,14 +30,17 @@ void adc_initialize()
     
     //Konfiguration des ADC
     OpenADC ( 
-        ADC_FOSC_16 & ADC_RIGHT_JUST & ADC_20_TAD,
-        ADC_CH0 & ADC_INT_OFF & ADC_REF_VDD_VSS,
+        ADC_FOSC_16 & ADC_RIGHT_JUST & ADC_4_TAD, // ADC_4_TAD = Converting over 4*(1/(FOSC/16)) = 4*(1/250kHz) = 16us
+        ADC_CH0 & ADC_INT_OFF & ADC_REF_VDD_VSS, // FOSC = 4 MHz
         0b0000000000000001 // wieso geht ADC_1ANA nicht?
     );
 }
 
 unsigned short adc_busy_read()
 {
+    unsigned short result;
+    
+    
     /*
 	ADCON0bits.GO = 1;
 	while(ADCON0bits.GO );
@@ -53,7 +56,11 @@ unsigned short adc_busy_read()
  
     //Warten bis die Umsetzung fertig ist
     while( BusyADC() );
- 
-    //Das Ergebnis in "Ergebnis" speichern
+    
+    //Das Ergebnis in "result" speichern
+    //result = ReadADC();
+    
+
     return ReadADC();
 }
+
