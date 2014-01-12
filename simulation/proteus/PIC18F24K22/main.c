@@ -17,10 +17,6 @@
 #define _XTAL_FREQ 4000000
 #define MAX (32)
 
-void set_wren(void);
-
-
-
 
 void main(void)
 {
@@ -29,7 +25,7 @@ void main(void)
     uint8_t s=0, result=0;
     
     int8_t adc=1;
-    uint8_t cmd_from_master;
+    uint8_t cmd_from_master =0;
     
     // Debug LED
     TRISCbits.TRISC2 = 0;
@@ -45,32 +41,20 @@ void main(void)
     // Open SPI
     OpenSPI1(SLV_SSON, MODE_00, SMPMID);
 
-    // Initialize
-    // .adc with initial Convertion
-    // .cmd_from_master
+    // Initial ADC conversion and SPI reading
     ConvertADC();
-    //PORTCbits.RC2 = 1;
-    cmd_from_master = ReadSPI1();
+    cmd_from_master = spi_tranceive(cmd_from_master);
     
-
-    // Write your code here
+    // MAIN LOOP
     while (1) {
-
         if (!BusyADC()) {
-            // ReadADC returns 10bit in 16bit uint16
-            // Right-Shift 2Bit and read lowest 8bit
-            adc = ReadADC() >> 2;
+            adc = ReadADC() >> 2; // we just need 8bits from the returned 10bit sample
             ConvertADC();
         }
-        
-        while(0 != WriteSPI1(183) );
-        //WriteSPI1(adc) ;
-        DataRdySPI1();
-        //Read Command or Color from Master:
-        cmd_from_master = ReadSPI1();
-        //DataRdySPI1();
-        
-
+        cmd_from_master = spi_tranceive(cmd_from_master);
+        //while(0 != WriteSPI1(cmd_from_master)); // while(0 != WriteSPI1(adc));
+        //while(0 != DataRdySPI1());
+        //cmd_from_master = ReadSPI1();
     }
  }
  

@@ -5,6 +5,6 @@
 #include <stdint.h>
 
 void spi_initialize();
-uint8_t spi_readWord();
+uint8_t spi_tranceive(uint8_t value);
 
 #endif // DP_SPI_H

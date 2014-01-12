@@ -22,17 +22,18 @@ void spi_initialize()
         OpenSPI1(SLV_SSON, MODE_00, SMPMID);
 }
 
-uint8_t spi_readWord()
+uint8_t spi_tranceive(uint8_t value)
 {
-//        uint16_t word=0b1111110000000000;
-//        uint16_t word=0b0111110000000000;
-
-        uint8_t word=0;
-        word += ReadSPI1();
-        //word <<=8;
-        //word += ReadSPI1();
-
-        return word;
+  uint8_t TempVar;
+  TempVar = SSP1BUF;       //Clear BF
+  PIR1bits.SSP1IF = 0;     //Clear interrupt flag
+  SSP1CON1bits.WCOL = 0;			//Clear any previous write collision
+  SSP1BUF = value;          // initiate bus cycle
+    
+  if ( SSP1CON1 & 0x80 )       // test if write collision occurred
+   return ( 0 );              // if WCOL bit is set return negative #
+  else
+      
+  while(!PIR1bits.SSP1IF); //wait until cycle complete
+  return ( SSP1BUF );      // return with byte read 
 }
-
-
