@@ -1,24 +1,24 @@
 // pack content for SPI transfer
-union dp_command {
-        unsigned int is_rgb : 1;
+union dp_std_command {
+        uint8_t is_rgb : 1;
         struct {
-                unsigned int : 1;
-                unsigned int r : 2;
-                unsigned int g : 3;
-                unsigned int b : 2;
+                uint8_t : 1;
+                uint8_t r : 2;
+                uint8_t g : 3;
+                uint8_t b : 2;
         } rgb;
-        unsigned char bytes[1];
-        unsigned int is_not_empty : 8;
+        uint8_t byte;
+        //unsigned int is_noop : 8 ^ 0xFF;
 };
-typedef union dp_command dp_command_t;
+typedef union dp_std_command dp_std_command_t;
 
 // pack content for SPI transfer
-union dp_status {
-        unsigned int is_pressed : 1;
+union dp_std_status {
+        uint8_t is_pressed : 1;
         struct {
-                unsigned int : 1;
-                unsigned int value : 7;
+                uint8_t : 1;
+                uint8_t value : 7;
         } data;
-        unsigned char byte;
+        uint8_t byte;
 };
-typedef union dp_status dp_status_t;
+typedef union dp_std_status dp_std_status_t;
