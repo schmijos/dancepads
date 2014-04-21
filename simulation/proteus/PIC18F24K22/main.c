@@ -13,24 +13,32 @@
 #include "dp_adc.h"
 #include "dp_led.h" 
 #include "dp_spi.h"
+#include "dp_spitypes.h"
 
 #define _XTAL_FREQ 4000000
 #define MAX (32)
 
+void display_color(uint8_t raw_color)
+{
+    // TODO: decode color to rgb
+    // ...
+    led_set_rgb(raw_color, raw_color, raw_color);
+}
 
 void main(void)
 {
     uint8_t max = MAX;
-    uint8_t r=0, g=0, b=0;
-    uint8_t s=0, result=0;
-    
-    int8_t adc=1;
-    uint8_t cmd_from_master =0;
+    dp_std_status_t current_status;
+    dp_std_command_t cmd_from_master;
+    int8_t adc = 1;
     
     // Debug LED
     TRISCbits.TRISC2 = 0;
     PORTCbits.RC2 = 0;
 
+    // Initialize LEDs
+    led_initialize();
+    
     // Initialize ADC
     OpenADC ( 
         ADC_FOSC_16 & ADC_RIGHT_JUST & ADC_4_TAD, // ADC_4_TAD = Converting over 4*(1/(FOSC/16)) = 4*(1/250kHz) = 16us
@@ -43,7 +51,7 @@ void main(void)
 
     // Initial ADC conversion and SPI reading
     ConvertADC();
-    cmd_from_master = spi_tranceive(cmd_from_master);
+    cmd_from_master.byte = spi_tranceive(0);
     
     // MAIN LOOP
     while (1) {
@@ -51,10 +59,17 @@ void main(void)
             adc = ReadADC() >> 2; // we just need 8bits from the returned 10bit sample
             ConvertADC();
         }
-        cmd_from_master = spi_tranceive(cmd_from_master);
-        //while(0 != WriteSPI1(cmd_from_master)); // while(0 != WriteSPI1(adc));
-        //while(0 != DataRdySPI1());
-        //cmd_from_master = ReadSPI1();
+        
+        current_status.data.value = adc;
+        current_status.is_pressed = 0; // 0 or 1
+        cmd_from_master.byte = spi_tranceive(current_status.byte); // TODO error handling needed: what if spi is not present?
+        if (cmd_from_master.is_rgb) {
+            // we got a color
+            PORTCbits.RC2 = 1; // Debug LED: we got a color
+        } else {
+            // we got a command
+            PORTCbits.RC2 = 0;
+        }
     }
  }
  
