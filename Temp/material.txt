@@ -1,0 +1,11 @@
+Allgemein:
+- Steuerung pro Platte an USB-Hub? Software sucht dann alle SPI-Steuerplatinen an einem USB-Port selbst
+- Bus + Strom Verbindungsstücke für Streifenenden
+
+Pro Platte:
+- 1x 25cmx25cm Plexiglassplatten (Schliff? Dicke? Kosten?)
+- 1x Unterlage?
+- 4x Anschlussmechanismus der Platten (Strom + Bus)
+- 4x RGB LED (gut austauschbar)
+- 4x Drucksensoren (ev. DMS)
+- 1x RGB-Controller per SPI ansteuerbar. 16Bit Steuerfarben hin, 1Bit Plattenstatus zurück. (je nach Busauslastung alles mal 4, dh. pro LED)
